@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial;
+        padding: 6px;
+        width: 260px;
+      }
+      button {
+        width: 100%;
+      }
+      .section {
+        margin-bottom: 10px;
+      }
+      label {
+        display: block;
+        margin: 4px 0;
+      }
+      .extract_btn {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        padding: 20px 10px;
+        cursor: pointer;
+      }
+      .status {
+        margin-top: 8px;
+        font-size: 12px;
+        line-height: 1.4;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="extractBtn" class="extract_btn">EXTRACT</button>
+
+    <div class="section">
+      <p>V7: 23_03_2026</p>
+      <strong>Target Tabs</strong>
+      <label>
+        <input type="radio" name="target" value="currentTab" checked />
+        Current tab
+      </label>
+      <label>
+        <input type="radio" name="target" value="currentWindow" />
+        All tabs in current window
+      </label>
+    </div>
+
+    <div class="section">
+      <strong>Content Scope</strong>
+      <label>
+        <input type="radio" name="scope" value="article" />
+        Article (Readability)
+      </label>
+      <label>
+        <input type="radio" name="scope" value="full" checked />
+        Full Page (DOM)
+      </label>
+    </div>
+
+    <div class="section">
+      <strong>Output Format</strong>
+      <label>
+        <input type="radio" name="format" value="html" />
+        HTML
+      </label>
+      <label>
+        <input type="radio" name="format" value="text" checked />
+        Text
+      </label>
+    </div>
+
+    <div class="section">
+      <strong>File Name Settings</strong>
+
+      <label>
+        Base Name:
+        <input
+          type="text"
+          id="baseName"
+          placeholder="Base name for file (without extension)"
+          style="width: 100%"
+        />
+      </label>
+
+      <label>
+        Next Serial Number:
+        <input
+          type="number"
+          id="serialNumber"
+          min="1"
+          step="1"
+          style="width: 100%"
+        />
+      </label>
+    </div>
+
+    <div class="section">
+      <strong>Notes / Header Text</strong>
+      <textarea
+        id="userText"
+        rows="4"
+        style="width: 100%; resize: vertical"
+        placeholder="Type text to include at top of file..."
+      ></textarea>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
