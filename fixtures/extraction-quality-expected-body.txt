@@ -1,0 +1,22 @@
+Product Research Notes
+
+Review the Alpha product page [https://example.test/products/alpha] before writing the summary.
+
+Steps
+
+3. Open the product page.
+4. Capture noisy fields.
+  - Price
+  - Inventory status
+
+Comparison
+
+Product Metrics
+Name	Price	Status
+Alpha	$20	Available
+Beta bundle	Backorder
+
+Raw Snippet
+
+const sku = "ALPHA-20";
+return sku.toLowerCase();

@@ -56,6 +56,13 @@ These should be rejected before downloads start:
 - HTML output preserves safe links as `href`.
 - HTML output preserves useful table attributes such as `colspan`, `rowspan`, and `scope`.
 - HTML output does not preserve scripts, styles, iframes, SVGs, or event-handler attributes.
+- CSS-hidden, inline-hidden, `hidden`, and `aria-hidden="true"` content is omitted from full-page exports.
+- Text output keeps headings readable without forcing uppercase.
+- Text output includes link URLs when anchor text does not already contain the URL.
+- Text output keeps ordered-list numbering, unordered-list bullets, and nested-list indentation.
+- Text output renders table rows with tab-separated cells.
+- Text output preserves `pre` code blocks with line breaks.
+- Compare `fixtures/extraction-quality-sample.html` against `fixtures/extraction-quality-expected-body.txt` for a focused extraction-quality sample.
 
 ## Failure Reporting
 

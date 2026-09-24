@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Extraction Quality Fixture</title>
+    <style>
+      .hidden-by-css {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header aria-hidden="true">Hidden navigation text</header>
+
+    <main>
+      <h1>Product Research Notes</h1>
+
+      <p>
+        Review the
+        <a href="/products/alpha">Alpha product page</a>
+        before writing the summary.
+      </p>
+
+      <div class="hidden-by-css">This CSS-hidden text should not appear.</div>
+      <div style="visibility: hidden">This inline-hidden text should not appear.</div>
+
+      <section>
+        <h2>Steps</h2>
+        <ol start="3">
+          <li>Open the product page.</li>
+          <li>
+            Capture noisy fields.
+            <ul>
+              <li>Price</li>
+              <li>Inventory status</li>
+            </ul>
+          </li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>Comparison</h2>
+        <table>
+          <caption>
+            Product Metrics
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">Price</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Alpha</td>
+              <td>$20</td>
+              <td>Available</td>
+            </tr>
+            <tr>
+              <td colspan="2">Beta bundle</td>
+              <td>Backorder</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>Raw Snippet</h2>
+        <pre><code>const sku = "ALPHA-20";
+return sku.toLowerCase();</code></pre>
+      </section>
+    </main>
+  </body>
+</html>
