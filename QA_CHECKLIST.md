@@ -13,8 +13,9 @@ Use this checklist before packaging a release for Chrome Web Store or Microsoft 
 ## Popup UI
 
 - Target, scope, and format controls render as segmented toggle buttons.
-- Help badges show useful tooltip copy on hover or keyboard focus.
+- Help buttons expand and collapse inline help content without overflowing the popup.
 - The top `EXTRACT` button remains the fastest action target.
+- Clicking `EXTRACT` closes the popup after the background accepts the job.
 - Destination preview shows only the final relative path, not a browser folder prefix or hardcoded local path.
 - The popup stays compact and does not make the whole popup the primary scroll container.
 - Long status/error output scrolls inside the status area.

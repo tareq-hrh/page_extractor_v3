@@ -18,19 +18,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.action === MESSAGE_START_JOB) {
-    (async () => {
-      try {
-        const result = await startExtractionJob(message.options || {});
-        sendResponse(result);
-      } catch (error) {
-        sendResponse({
-          ok: false,
-          error: error?.message || String(error),
-        });
-      }
-    })();
+    try {
+      sendResponse(startExtractionJob(message.options || {}));
+    } catch (error) {
+      sendResponse({
+        ok: false,
+        error: error?.message || String(error),
+      });
+    }
 
-    return true;
+    return false;
   }
 
   if (message.action === MESSAGE_GET_LATEST_JOB) {
@@ -48,7 +45,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return false;
 });
 
-async function startExtractionJob(rawOptions) {
+function startExtractionJob(rawOptions) {
   if (currentJobPromise) {
     return {
       ok: false,
@@ -57,12 +54,27 @@ async function startExtractionJob(rawOptions) {
   }
 
   const options = normalizeJobOptions(rawOptions);
+  const jobId = buildJobId();
 
-  currentJobPromise = runExtractionJob(options).finally(() => {
-    currentJobPromise = null;
-  });
+  currentJobPromise = runExtractionJob(options, jobId)
+    .catch(async (error) => {
+      const errorMessage = error?.message || String(error);
+      await persistFailedJob(jobId, options, errorMessage).catch(() => {});
 
-  return currentJobPromise;
+      return {
+        ok: false,
+        error: errorMessage,
+      };
+    })
+    .finally(() => {
+      currentJobPromise = null;
+    });
+
+  return {
+    jobId,
+    ok: true,
+    started: true,
+  };
 }
 
 function normalizeJobOptions(rawOptions) {
@@ -91,8 +103,7 @@ function normalizeJobOptions(rawOptions) {
   };
 }
 
-async function runExtractionJob(options) {
-  const tabs = await getTargetTabs(options.target);
+async function runExtractionJob(options, jobId) {
   let serialNumber = options.serialNumber;
   const job = {
     completedCount: 0,
@@ -100,14 +111,18 @@ async function runExtractionJob(options) {
     downloadedFiles: [],
     failedCount: 0,
     failures: [],
-    id: buildJobId(),
+    id: jobId,
     startedAt: new Date().toISOString(),
     status: "running",
     successCount: 0,
     target: options.target,
-    totalCount: tabs.length,
+    totalCount: 0,
   };
 
+  await persistJob(job);
+
+  const tabs = await getTargetTabs(options.target);
+  job.totalCount = tabs.length;
   await persistJob(job);
 
   for (const tab of tabs) {
@@ -150,6 +165,32 @@ async function runExtractionJob(options) {
     job,
     nextSerialNumber: serialNumber,
   };
+}
+
+async function persistFailedJob(jobId, options, errorMessage) {
+  const job = {
+    completedAt: new Date().toISOString(),
+    completedCount: 0,
+    currentTab: "",
+    downloadedFiles: [],
+    failedCount: 1,
+    failures: [
+      {
+        error: errorMessage,
+        title: "",
+        url: "",
+      },
+    ],
+    id: jobId,
+    startedAt: new Date().toISOString(),
+    status: "failed",
+    successCount: 0,
+    target: options.target,
+    totalCount: 0,
+  };
+
+  await persistJob(job);
+  return job;
 }
 
 async function getTargetTabs(target) {

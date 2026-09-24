@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const manifest = chrome.runtime.getManifest();
 
   versionInfoEl.textContent = `${manifest.name} v${manifest.version}`;
+  initHelpToggles();
 
   chrome.storage.local.get(
     [
@@ -101,25 +102,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     extractBtn.disabled = true;
-    setStatus("Processing...", false);
+    setStatus("Starting extraction...", false);
 
     try {
+      await persistCurrentSettings(optionsResult.options);
+
       const response = await chrome.runtime.sendMessage({
         action: MESSAGE_START_JOB,
         options: optionsResult.options,
       });
-
-      if (response?.nextSerialNumber) {
-        serialInput.value = String(response.nextSerialNumber);
-        updateDestinationPreview();
-      }
 
       if (!response || !response.ok) {
         renderJobStatus(response?.job, response?.error || "Extraction failed.");
         return;
       }
 
-      renderJobStatus(response.job);
+      setStatus("Extraction started.", false);
+      window.close();
     } catch (error) {
       setStatus(`Error: ${formatRuntimeError(error)}`, true);
     } finally {
@@ -150,6 +149,47 @@ document.addEventListener("DOMContentLoaded", () => {
         userText: textarea.value,
       },
     };
+  }
+
+  function persistCurrentSettings(options) {
+    return chrome.storage.local.set({
+      baseNameForDownload: options.baseName,
+      downloadFolderPath: options.downloadFolderPath,
+      nextSerialNumberForDownload: options.serialNumber,
+      savedUserTextPageExtractorExtension: options.userText,
+    });
+  }
+
+  function initHelpToggles() {
+    const toggles = Array.from(document.querySelectorAll(".help-toggle"));
+
+    toggles.forEach((toggle) => {
+      toggle.addEventListener("click", () => {
+        const helpContent = document.getElementById(
+          toggle.getAttribute("aria-controls"),
+        );
+
+        if (!helpContent) {
+          return;
+        }
+
+        const shouldOpen = toggle.getAttribute("aria-expanded") !== "true";
+
+        toggles.forEach((otherToggle) => {
+          const otherContent = document.getElementById(
+            otherToggle.getAttribute("aria-controls"),
+          );
+
+          otherToggle.setAttribute("aria-expanded", "false");
+          if (otherContent) {
+            otherContent.hidden = true;
+          }
+        });
+
+        toggle.setAttribute("aria-expanded", String(shouldOpen));
+        helpContent.hidden = !shouldOpen;
+      });
+    });
   }
 
   function updateDestinationPreview() {
