@@ -11,6 +11,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const destinationPreviewEl = document.getElementById("destinationPreview");
   const extractBtn = document.getElementById("extractBtn");
   const statusEl = document.getElementById("status");
+  const versionInfoEl = document.getElementById("versionInfo");
+  const manifest = chrome.runtime.getManifest();
+
+  versionInfoEl.textContent = `${manifest.name} v${manifest.version}`;
 
   chrome.storage.local.get(
     [
@@ -66,9 +70,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   serialInput.addEventListener("input", (event) => {
-    chrome.storage.local.set({
-      nextSerialNumberForDownload: Number(event.target.value),
-    });
+    const serialResult = Utils.validateSerialNumber(event.target.value);
+
+    if (serialResult.ok) {
+      chrome.storage.local.set({
+        nextSerialNumberForDownload: serialResult.value,
+      });
+    }
+
     updateDestinationPreview();
   });
 
@@ -124,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return folderResult;
     }
 
-    const serialResult = Utils.validateSerialNumber(serialInput.value || 1);
+    const serialResult = Utils.validateSerialNumber(serialInput.value);
     if (!serialResult.ok) {
       return serialResult;
     }
@@ -145,7 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateDestinationPreview() {
     const folderResult = Utils.validateDownloadFolderPath(folderInput.value);
-    const serialResult = Utils.validateSerialNumber(serialInput.value || 1);
+    const serialResult = Utils.validateSerialNumber(serialInput.value);
     const format = document.querySelector('input[name="format"]:checked').value;
 
     destinationPreviewEl.classList.remove("error");
@@ -218,10 +227,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const firstFailures = failures
       .slice(0, 3)
-      .map((failure) => failure.error)
+      .map(formatFailure)
       .filter(Boolean);
 
-    return firstFailures.length ? ` ${firstFailures.join(" ")}` : "";
+    const moreCount = failures.length - firstFailures.length;
+    const moreText = moreCount > 0 ? `\n- ${moreCount} more skipped tab(s).` : "";
+
+    return firstFailures.length
+      ? `\nSkipped tabs:\n- ${firstFailures.join("\n- ")}${moreText}`
+      : "";
+  }
+
+  function formatFailure(failure) {
+    const label = failure.title || failure.url || "Untitled tab";
+    const error = failure.error || "Unknown error.";
+
+    return `${label}: ${error}`;
   }
 
   function setStatus(message, isError) {

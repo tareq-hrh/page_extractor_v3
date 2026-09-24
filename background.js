@@ -69,7 +69,7 @@ function normalizeJobOptions(rawOptions) {
   const target = rawOptions.target === "currentWindow" ? "currentWindow" : "currentTab";
   const scope = rawOptions.scope === "article" ? "article" : "full";
   const format = rawOptions.format === "html" ? "html" : "text";
-  const serialResult = Utils.validateSerialNumber(rawOptions.serialNumber || 1);
+  const serialResult = Utils.validateSerialNumber(rawOptions.serialNumber ?? 1);
   const folderResult = Utils.validateDownloadFolderPath(rawOptions.downloadFolderPath || "");
 
   if (!serialResult.ok) {

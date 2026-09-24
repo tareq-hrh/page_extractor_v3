@@ -2,6 +2,7 @@
   "name": "smart-page-extractor",
   "private": true,
   "scripts": {
+    "package": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-extension.ps1",
     "test": "node --test"
   }
 }

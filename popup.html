@@ -32,6 +32,7 @@
         margin-top: 8px;
         font-size: 12px;
         line-height: 1.4;
+        white-space: pre-wrap;
         word-break: break-word;
       }
       .hint {
@@ -44,13 +45,18 @@
       .error {
         color: #b00020;
       }
+      .version-info {
+        color: #555;
+        font-size: 11px;
+        margin: 0 0 8px;
+      }
     </style>
   </head>
   <body>
     <button id="extractBtn" class="extract_btn">EXTRACT</button>
 
     <div class="section">
-      <p>V7: 23_03_2026</p>
+      <p id="versionInfo" class="version-info"></p>
       <strong>Target Tabs</strong>
       <label>
         <input type="radio" name="target" value="currentTab" checked />
