@@ -1,0 +1,7 @@
+{
+  "name": "smart-page-extractor",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  }
+}

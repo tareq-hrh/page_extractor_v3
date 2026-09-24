@@ -5,10 +5,14 @@
       body {
         font-family: Arial;
         padding: 6px;
-        width: 260px;
+        width: 300px;
       }
       button {
         width: 100%;
+      }
+      input,
+      textarea {
+        box-sizing: border-box;
       }
       .section {
         margin-bottom: 10px;
@@ -29,6 +33,16 @@
         font-size: 12px;
         line-height: 1.4;
         word-break: break-word;
+      }
+      .hint {
+        color: #555;
+        font-size: 11px;
+        line-height: 1.35;
+        margin-top: 4px;
+        word-break: break-word;
+      }
+      .error {
+        color: #b00020;
       }
     </style>
   </head>
@@ -95,6 +109,18 @@
           style="width: 100%"
         />
       </label>
+
+      <label>
+        Folder under Downloads:
+        <input
+          type="text"
+          id="downloadFolderPath"
+          placeholder="products/20_09_2026"
+          style="width: 100%"
+        />
+      </label>
+
+      <div id="destinationPreview" class="hint"></div>
     </div>
 
     <div class="section">
@@ -107,8 +133,9 @@
       ></textarea>
     </div>
 
-    <div id="status" class="status"></div>
+    <div id="status" class="status" aria-live="polite"></div>
 
+    <script src="shared.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

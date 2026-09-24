@@ -1,17 +1,21 @@
 (() => {
-  if (globalThis.__smartPageExtractorInstalled) {
-    return;
-  }
-  globalThis.__smartPageExtractorInstalled = true;
+  const MESSAGE_EXTRACT_TAB = "smart-page-extractor.extract-tab";
+  const LISTENER_KEY = "__smartPageExtractorMessageListener";
+  const VERSION_KEY = "__smartPageExtractorContentVersion";
+  const CONTENT_VERSION = "phase-1-2026-09-24";
 
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (!message || message.action !== "extract-page") {
-      return;
+  if (globalThis[LISTENER_KEY]) {
+    chrome.runtime.onMessage.removeListener(globalThis[LISTENER_KEY]);
+  }
+
+  const messageListener = (message, sender, sendResponse) => {
+    if (!message || message.action !== MESSAGE_EXTRACT_TAB) {
+      return false;
     }
 
     (async () => {
       try {
-        const result = await extractAndDownload(message.options || {});
+        const result = await extractPage(message.options || {});
         sendResponse(result);
       } catch (error) {
         sendResponse({
@@ -22,14 +26,16 @@
     })();
 
     return true;
-  });
+  };
 
-  async function extractAndDownload(options) {
+  globalThis[LISTENER_KEY] = messageListener;
+  globalThis[VERSION_KEY] = CONTENT_VERSION;
+  chrome.runtime.onMessage.addListener(messageListener);
+
+  async function extractPage(options) {
     const scope = options.scope || "full";
     const format = options.format || "text";
     const userText = options.userText || "";
-    const baseName = options.baseName || "file";
-    const serialNumber = Number(options.serialNumber || 1);
 
     let container;
 
@@ -47,49 +53,45 @@
       container = document.createElement("div");
       container.innerHTML = article.content;
     } else {
-      container = document.body.cloneNode(true);
+      container = document.body ? document.body.cloneNode(true) : document.createElement("body");
     }
 
     cleanupContainer(container);
 
-    const title = sanitizeTitle(document.title);
+    const title = normalizePageTitle(document.title);
     const pageUrl = location.href;
-    const safeBase = sanitizeFilename(baseName || "file");
     const timestamp = buildTimestamp();
 
-    let content = "";
-    let extension = "";
-
     if (format === "html") {
-      content = "<html><body>" + container.innerHTML + "</body></html>";
-      extension = "html";
-    } else {
-      const bodyText = htmlToFormattedText(container);
-
-      const headerParts = [];
-
-      if (userText.trim() !== "") {
-        headerParts.push(userText.trim());
-      }
-
-      headerParts.push(`Date: ${timestamp}`);
-      headerParts.push(`URL: ${pageUrl}`);
-      headerParts.push(`Page Title: ${title}`);
-
-      const header = headerParts.join("\n\n");
-      const separator =
-        "\n\nSEPARATOR_____________________________________________________________\n\n";
-
-      content = header + separator + bodyText;
-      extension = "txt";
+      return {
+        ok: true,
+        content: buildHtmlDocument({
+          bodyHtml: container.innerHTML,
+          pageUrl,
+          timestamp,
+          title,
+          userText,
+        }),
+        extension: "html",
+        mimeType: "text/html;charset=utf-8",
+        pageTitle: title,
+        pageUrl,
+      };
     }
-
-    const filename = `${safeBase}_${serialNumber}.${extension}`;
-    triggerDownload(content, filename, format);
 
     return {
       ok: true,
-      filename,
+      content: buildTextDocument({
+        bodyText: htmlToFormattedText(container),
+        pageUrl,
+        timestamp,
+        title,
+        userText,
+      }),
+      extension: "txt",
+      mimeType: "text/plain;charset=utf-8",
+      pageTitle: title,
+      pageUrl,
     };
   }
 
@@ -128,15 +130,161 @@
       }
     });
 
-    container.querySelectorAll("*").forEach((el) => {
-      [...el.attributes].forEach((attr) => el.removeAttribute(attr.name));
-    });
+    container.querySelectorAll("*").forEach(sanitizeElementAttributes);
 
     container.querySelectorAll("*").forEach((el) => {
       if (!el.textContent.trim() && el.children.length === 0) {
         el.remove();
       }
     });
+  }
+
+  function sanitizeElementAttributes(el) {
+    const tag = el.tagName.toLowerCase();
+    const originalAttributes = {};
+
+    [...el.attributes].forEach((attr) => {
+      originalAttributes[attr.name.toLowerCase()] = attr.value;
+      el.removeAttribute(attr.name);
+    });
+
+    setTextAttribute(el, "title", originalAttributes.title);
+    setTextAttribute(el, "aria-label", originalAttributes["aria-label"]);
+
+    if (tag === "a") {
+      const href = normalizeSafeUrl(originalAttributes.href);
+      if (href) {
+        el.setAttribute("href", href);
+      }
+    }
+
+    if (tag === "blockquote" || tag === "q") {
+      const cite = normalizeSafeUrl(originalAttributes.cite);
+      if (cite) {
+        el.setAttribute("cite", cite);
+      }
+    }
+
+    if (tag === "td" || tag === "th") {
+      setPositiveIntegerAttribute(el, "colspan", originalAttributes.colspan);
+      setPositiveIntegerAttribute(el, "rowspan", originalAttributes.rowspan);
+      setScopeAttribute(el, originalAttributes.scope);
+    }
+
+    if (tag === "ol") {
+      setIntegerAttribute(el, "start", originalAttributes.start);
+      setListTypeAttribute(el, originalAttributes.type);
+    }
+
+    if (tag === "time") {
+      setTextAttribute(el, "datetime", originalAttributes.datetime);
+    }
+  }
+
+  function setTextAttribute(el, name, value) {
+    const cleanValue = String(value || "").trim();
+    if (cleanValue) {
+      el.setAttribute(name, cleanValue.substring(0, 1000));
+    }
+  }
+
+  function setPositiveIntegerAttribute(el, name, value) {
+    const numberValue = Number(value);
+    if (Number.isInteger(numberValue) && numberValue > 0 && numberValue <= 1000) {
+      el.setAttribute(name, String(numberValue));
+    }
+  }
+
+  function setIntegerAttribute(el, name, value) {
+    const numberValue = Number(value);
+    if (Number.isInteger(numberValue)) {
+      el.setAttribute(name, String(numberValue));
+    }
+  }
+
+  function setListTypeAttribute(el, value) {
+    if (/^(1|a|A|i|I)$/.test(String(value || ""))) {
+      el.setAttribute("type", value);
+    }
+  }
+
+  function setScopeAttribute(el, value) {
+    if (/^(row|col|rowgroup|colgroup)$/i.test(String(value || ""))) {
+      el.setAttribute("scope", value.toLowerCase());
+    }
+  }
+
+  function normalizeSafeUrl(value) {
+    const rawValue = String(value || "").trim();
+    if (!rawValue) {
+      return "";
+    }
+
+    try {
+      const url = new URL(rawValue, document.baseURI);
+      if (["http:", "https:", "mailto:", "tel:"].includes(url.protocol)) {
+        return url.href;
+      }
+    } catch {
+      // Ignore invalid URLs.
+    }
+
+    return "";
+  }
+
+  function buildTextDocument({ bodyText, pageUrl, timestamp, title, userText }) {
+    const headerParts = [];
+
+    if (userText.trim() !== "") {
+      headerParts.push(userText.trim());
+    }
+
+    headerParts.push(`Date: ${timestamp}`);
+    headerParts.push(`URL: ${pageUrl}`);
+    headerParts.push(`Page Title: ${title}`);
+
+    const header = headerParts.join("\n\n");
+    const separator =
+      "\n\nSEPARATOR_____________________________________________________________\n\n";
+
+    return header + separator + bodyText;
+  }
+
+  function buildHtmlDocument({ bodyHtml, pageUrl, timestamp, title, userText }) {
+    return [
+      "<!doctype html>",
+      "<html>",
+      "<head>",
+      '<meta charset="utf-8">',
+      `<title>${escapeHtml(title || "Extracted page")}</title>`,
+      `<base href="${escapeAttribute(pageUrl)}">`,
+      "</head>",
+      "<body>",
+      buildHtmlMetadata({ pageUrl, timestamp, title, userText }),
+      bodyHtml,
+      "</body>",
+      "</html>",
+    ].join("");
+  }
+
+  function buildHtmlMetadata({ pageUrl, timestamp, title, userText }) {
+    const notesHtml = userText.trim()
+      ? `<p><strong>Notes:</strong></p><p>${escapeHtml(userText.trim()).replace(/\n/g, "<br>")}</p>`
+      : "";
+
+    return [
+      '<div class="smart-page-extractor-metadata">',
+      notesHtml,
+      "<dl>",
+      "<dt>Date</dt>",
+      `<dd>${escapeHtml(timestamp)}</dd>`,
+      "<dt>URL</dt>",
+      `<dd><a href="${escapeAttribute(pageUrl)}">${escapeHtml(pageUrl)}</a></dd>`,
+      "<dt>Page Title</dt>",
+      `<dd>${escapeHtml(title)}</dd>`,
+      "</dl>",
+      "</div>",
+    ].join("");
   }
 
   function htmlToFormattedText(root) {
@@ -191,41 +339,21 @@
       .trim();
   }
 
-  function triggerDownload(content, filename, format) {
-    const mimeType =
-      format === "html"
-        ? "text/html;charset=utf-8"
-        : "text/plain;charset=utf-8";
-
-    const blob = new Blob(["\uFEFF" + content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.rel = "noopener";
-    a.style.display = "none";
-
-    document.documentElement.appendChild(a);
-    a.click();
-    a.remove();
-
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
-  function sanitizeFilename(value) {
-    return (
-      String(value)
-        .replace(/[\\/:*?"<>|]/g, "")
-        .trim() || "file"
-    );
-  }
-
-  function sanitizeTitle(value) {
+  function escapeHtml(value) {
     return String(value || "")
-      .replace(/[\\/:*?"<>|]/g, "")
-      .trim()
-      .substring(0, 80);
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function escapeAttribute(value) {
+    return escapeHtml(value).replace(/`/g, "&#96;");
+  }
+
+  function normalizePageTitle(value) {
+    return String(value || "").trim().substring(0, 200);
   }
 
   function buildTimestamp() {

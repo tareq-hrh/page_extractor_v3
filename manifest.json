@@ -3,7 +3,14 @@
   "name": "Smart Page Extractor",
   "version": "2.1",
   "description": "Extract readable content as clean HTML or text.",
-  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs",
+    "downloads",
+    "offscreen"
+  ],
   "host_permissions": ["<all_urls>"],
   "action": {
     "default_popup": "popup.html"
