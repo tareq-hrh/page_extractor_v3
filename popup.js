@@ -179,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     const relativeFilename = Utils.joinDownloadPath(folderResult.value, filename);
 
-    destinationPreviewEl.textContent = `Downloads/${relativeFilename}`;
+    destinationPreviewEl.textContent = relativeFilename;
   }
 
   function renderJobStatus(job, fallbackError) {

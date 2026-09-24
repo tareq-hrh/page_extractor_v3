@@ -59,6 +59,8 @@ The package is written to `dist/`. The ZIP contains only extension runtime files
 
 The extension does not send extracted page content to a remote server. Extraction and file generation happen locally in the browser.
 
+Chrome and Edge do not provide an extension API for reading the configured default download directory before a download starts. The popup therefore shows only the relative path that will be passed to the downloads API, and the browser settings control the base folder.
+
 ## Release Support Files
 
 - `QA_CHECKLIST.md`: manual verification matrix.

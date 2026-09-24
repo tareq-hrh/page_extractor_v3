@@ -2,38 +2,68 @@
 <html>
   <head>
     <style>
+      html,
       body {
-        font-family: Arial;
-        padding: 6px;
-        width: 300px;
+        max-height: 600px;
+        overflow: hidden;
+      }
+      body {
+        background: #f7f8f5;
+        color: #17221b;
+        font-family:
+          Arial,
+          sans-serif;
+        margin: 0;
+        padding: 8px;
+        width: 320px;
       }
       button {
-        width: 100%;
+        font-family: inherit;
       }
       input,
       textarea {
         box-sizing: border-box;
+        font-family: inherit;
       }
       .section {
-        margin-bottom: 10px;
+        margin-top: 8px;
       }
       label {
         display: block;
-        margin: 4px 0;
       }
       .extract_btn {
         background-color: #4caf50;
+        border: 1px solid #3f9d44;
+        border-radius: 7px;
+        box-shadow: 0 1px 2px rgba(23, 34, 27, 0.18);
         color: white;
-        border: none;
-        padding: 20px 10px;
         cursor: pointer;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0;
+        padding: 13px 10px;
+        width: 100%;
+      }
+      .extract_btn:disabled {
+        cursor: wait;
+        opacity: 0.65;
       }
       .status {
+        background: #ffffff;
+        border: 1px solid #d9e2d8;
+        border-radius: 7px;
         margin-top: 8px;
+        min-height: 16px;
+        padding: 6px;
         font-size: 12px;
         line-height: 1.4;
+        max-height: 64px;
         white-space: pre-wrap;
         word-break: break-word;
+        overflow-y: auto;
+      }
+      .status:empty {
+        display: none;
       }
       .hint {
         color: #555;
@@ -48,7 +78,148 @@
       .version-info {
         color: #555;
         font-size: 11px;
-        margin: 0 0 8px;
+        margin: 8px 0 0;
+        text-align: center;
+      }
+      .section-title-row {
+        align-items: center;
+        display: flex;
+        gap: 6px;
+        margin-bottom: 4px;
+      }
+      .section-title-row strong {
+        font-size: 12px;
+      }
+      .help-badge {
+        align-items: center;
+        background: #eaf2ea;
+        border: 1px solid #bfd3bf;
+        border-radius: 50%;
+        color: #23472b;
+        cursor: help;
+        display: inline-flex;
+        flex: 0 0 auto;
+        font-size: 10px;
+        font-weight: 700;
+        height: 18px;
+        justify-content: center;
+        line-height: 1;
+        position: relative;
+        width: 18px;
+      }
+      .help-badge:hover::after,
+      .help-badge:focus::after {
+        background: #17221b;
+        border-radius: 6px;
+        color: #fff;
+        content: attr(data-tooltip);
+        font-size: 11px;
+        font-weight: 400;
+        left: -20px;
+        line-height: 1.35;
+        padding: 7px;
+        position: absolute;
+        top: calc(100% + 5px);
+        width: 250px;
+        z-index: 5;
+      }
+      .segmented-control {
+        background: #e8eee7;
+        border: 1px solid #cfdbcf;
+        border-radius: 8px;
+        display: grid;
+        gap: 2px;
+        padding: 2px;
+      }
+      .segmented-control.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .segmented-control label {
+        margin: 0;
+        min-width: 0;
+        position: relative;
+      }
+      .segmented-control input {
+        height: 1px;
+        opacity: 0;
+        position: absolute;
+        width: 1px;
+      }
+      .segmented-control span {
+        align-items: center;
+        border-radius: 6px;
+        color: #314337;
+        cursor: pointer;
+        display: flex;
+        font-size: 12px;
+        font-weight: 600;
+        justify-content: center;
+        min-height: 18px;
+        padding: 4px 6px;
+        text-align: center;
+      }
+      .segmented-control input:checked + span {
+        background: #ffffff;
+        box-shadow: 0 1px 2px rgba(23, 34, 27, 0.14);
+        color: #102217;
+      }
+      .segmented-control input:focus + span {
+        outline: 2px solid #7ab77d;
+        outline-offset: -2px;
+      }
+      .file-settings {
+        background: #ffffff;
+        border: 1px solid #d9e2d8;
+        border-radius: 8px;
+        padding: 8px;
+      }
+      .compact-grid {
+        display: grid;
+        gap: 6px;
+        grid-template-columns: minmax(0, 1fr) 86px;
+      }
+      .field-label {
+        color: #334338;
+        font-size: 11px;
+        font-weight: 700;
+        margin-top: 6px;
+      }
+      .field-input,
+      textarea {
+        border: 1px solid #c9d4ca;
+        border-radius: 6px;
+        color: #17221b;
+        font-size: 12px;
+        margin-top: 3px;
+        padding: 6px;
+        width: 100%;
+      }
+      textarea {
+        max-height: 58px;
+        min-height: 50px;
+        overflow-y: auto;
+        resize: none;
+      }
+      .destination-card {
+        background: #f5f8f4;
+        border: 1px solid #d8e4d7;
+        border-radius: 7px;
+        margin-top: 7px;
+        padding: 7px;
+      }
+      .destination-heading {
+        color: #334338;
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 3px;
+      }
+      .destination-preview {
+        color: #102217;
+        font-size: 12px;
+        line-height: 1.35;
+        max-height: 38px;
+        overflow-y: auto;
+        word-break: break-word;
       }
     </style>
   </head>
@@ -56,90 +227,140 @@
     <button id="extractBtn" class="extract_btn">EXTRACT</button>
 
     <div class="section">
-      <p id="versionInfo" class="version-info"></p>
-      <strong>Target Tabs</strong>
-      <label>
-        <input type="radio" name="target" value="currentTab" checked />
-        Current tab
-      </label>
-      <label>
-        <input type="radio" name="target" value="currentWindow" />
-        All tabs in current window
-      </label>
+      <div class="section-title-row">
+        <span
+          class="help-badge"
+          tabindex="0"
+          data-tooltip="Current tab extracts only the active page. All tabs extracts every supported tab in this browser window."
+          >?</span
+        >
+        <strong>Target Tabs</strong>
+      </div>
+      <div class="segmented-control two">
+        <label>
+          <input type="radio" name="target" value="currentTab" checked />
+          <span>Current tab</span>
+        </label>
+        <label>
+          <input type="radio" name="target" value="currentWindow" />
+          <span>All tabs</span>
+        </label>
+      </div>
     </div>
 
     <div class="section">
-      <strong>Content Scope</strong>
-      <label>
-        <input type="radio" name="scope" value="article" />
-        Article (Readability)
-      </label>
-      <label>
-        <input type="radio" name="scope" value="full" checked />
-        Full Page (DOM)
-      </label>
+      <div class="section-title-row">
+        <span
+          class="help-badge"
+          tabindex="0"
+          data-tooltip="Article uses Readability for the main article. Full page keeps more of the visible page structure."
+          >?</span
+        >
+        <strong>Content Scope</strong>
+      </div>
+      <div class="segmented-control two">
+        <label>
+          <input type="radio" name="scope" value="article" />
+          <span>Article</span>
+        </label>
+        <label>
+          <input type="radio" name="scope" value="full" checked />
+          <span>Full page</span>
+        </label>
+      </div>
     </div>
 
     <div class="section">
-      <strong>Output Format</strong>
-      <label>
-        <input type="radio" name="format" value="html" />
-        HTML
-      </label>
-      <label>
-        <input type="radio" name="format" value="text" checked />
-        Text
-      </label>
+      <div class="section-title-row">
+        <span
+          class="help-badge"
+          tabindex="0"
+          data-tooltip="Text is easiest to read and search. HTML keeps cleaned page structure and links."
+          >?</span
+        >
+        <strong>Output Format</strong>
+      </div>
+      <div class="segmented-control two">
+        <label>
+          <input type="radio" name="format" value="html" />
+          <span>HTML</span>
+        </label>
+        <label>
+          <input type="radio" name="format" value="text" checked />
+          <span>Text</span>
+        </label>
+      </div>
     </div>
 
-    <div class="section">
-      <strong>File Name Settings</strong>
+    <div class="section file-settings">
+      <div class="section-title-row">
+        <span
+          class="help-badge"
+          tabindex="0"
+          data-tooltip="Browsers do not expose the configured download folder here. Enter only a relative folder path, such as products/20_09_2026. The file is saved inside the browser's own download location."
+          >?</span
+        >
+        <strong>File Name Settings</strong>
+      </div>
 
-      <label>
-        Base Name:
-        <input
-          type="text"
-          id="baseName"
-          placeholder="Base name for file (without extension)"
-          style="width: 100%"
-        />
-      </label>
+      <div class="compact-grid">
+        <label class="field-label" for="baseName">
+          Base name
+          <input
+            class="field-input"
+            type="text"
+            id="baseName"
+            placeholder="file"
+          />
+        </label>
 
-      <label>
-        Next Serial Number:
-        <input
-          type="number"
-          id="serialNumber"
-          min="1"
-          step="1"
-          style="width: 100%"
-        />
-      </label>
+        <label class="field-label" for="serialNumber">
+          Next serial
+          <input
+            class="field-input"
+            type="number"
+            id="serialNumber"
+            min="1"
+            step="1"
+          />
+        </label>
+      </div>
 
-      <label>
-        Folder under Downloads:
+      <label class="field-label" for="downloadFolderPath">
+        folder/s path
         <input
+          class="field-input"
           type="text"
           id="downloadFolderPath"
           placeholder="products/20_09_2026"
-          style="width: 100%"
         />
       </label>
 
-      <div id="destinationPreview" class="hint"></div>
+      <div class="destination-card">
+        <div class="destination-heading">Relative path preview</div>
+        <div id="destinationPreview" class="destination-preview"></div>
+      </div>
     </div>
 
     <div class="section">
-      <strong>Notes / Header Text</strong>
+      <div class="section-title-row">
+        <span
+          class="help-badge"
+          tabindex="0"
+          data-tooltip="Notes are written into the exported file header before the page content."
+          >?</span
+        >
+        <strong>Notes / Header Text</strong>
+      </div>
       <textarea
         id="userText"
-        rows="4"
-        style="width: 100%; resize: vertical"
+        rows="3"
         placeholder="Type text to include at top of file..."
       ></textarea>
     </div>
 
     <div id="status" class="status" aria-live="polite"></div>
+    <p id="versionInfo" class="version-info"></p>
 
     <script src="shared.js"></script>
     <script src="popup.js"></script>

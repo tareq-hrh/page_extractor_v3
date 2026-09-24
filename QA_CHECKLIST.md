@@ -10,6 +10,15 @@ Use this checklist before packaging a release for Chrome Web Store or Microsoft 
 - Confirm the extension icon appears in the toolbar and extension management page.
 - Open the background service-worker console and check for startup errors.
 
+## Popup UI
+
+- Target, scope, and format controls render as segmented toggle buttons.
+- Help badges show useful tooltip copy on hover or keyboard focus.
+- The top `EXTRACT` button remains the fastest action target.
+- Destination preview shows only the final relative path, not a browser folder prefix or hardcoded local path.
+- The popup stays compact and does not make the whole popup the primary scroll container.
+- Long status/error output scrolls inside the status area.
+
 ## Current Tab Extraction
 
 - Text export, full-page scope, empty folder path.
@@ -75,6 +84,5 @@ These should be rejected before downloads start:
 ## Regression Sweep
 
 - Reopen popup after browser restart and confirm saved settings are restored.
-- Confirm the top `EXTRACT` button still works as the fastest action target.
 - Confirm the extension works after disabling and re-enabling it.
 - Confirm no unexpected files are written outside the configured Downloads subfolder.
