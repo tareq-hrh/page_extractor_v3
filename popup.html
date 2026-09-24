@@ -4,18 +4,16 @@
     <style>
       html,
       body {
-        max-height: 600px;
-        overflow: hidden;
+        height: fit-content;
       }
       body {
         background: #f7f8f5;
         color: #17221b;
-        font-family:
-          Arial,
-          sans-serif;
+        font-family: Arial, sans-serif;
         margin: 0;
         padding: 8px;
         width: 320px;
+        overflow: auto;
       }
       button {
         font-family: inherit;
@@ -167,12 +165,6 @@
         outline: 2px solid #7ab77d;
         outline-offset: -2px;
       }
-      .file-settings {
-        background: #ffffff;
-        border: 1px solid #d9e2d8;
-        border-radius: 8px;
-        padding: 8px;
-      }
       .compact-grid {
         display: grid;
         gap: 6px;
@@ -220,6 +212,7 @@
         max-height: 38px;
         overflow-y: auto;
         word-break: break-word;
+        padding-top: 4px;
       }
     </style>
   </head>
@@ -292,7 +285,7 @@
       </div>
     </div>
 
-    <div class="section file-settings">
+    <div class="section">
       <div class="section-title-row">
         <span
           class="help-badge"
@@ -302,6 +295,15 @@
         >
         <strong>File Name Settings</strong>
       </div>
+      <label class="field-label" for="downloadFolderPath">
+        folder/s path
+        <input
+          class="field-input"
+          type="text"
+          id="downloadFolderPath"
+          placeholder="products/20_09_2026"
+        />
+      </label>
 
       <div class="compact-grid">
         <label class="field-label" for="baseName">
@@ -326,20 +328,7 @@
         </label>
       </div>
 
-      <label class="field-label" for="downloadFolderPath">
-        folder/s path
-        <input
-          class="field-input"
-          type="text"
-          id="downloadFolderPath"
-          placeholder="products/20_09_2026"
-        />
-      </label>
-
-      <div class="destination-card">
-        <div class="destination-heading">Relative path preview</div>
-        <div id="destinationPreview" class="destination-preview"></div>
-      </div>
+      <span id="destinationPreview" class="destination-preview"></span>
     </div>
 
     <div class="section">
@@ -356,6 +345,7 @@
         id="userText"
         rows="3"
         placeholder="Type text to include at top of file..."
+        
       ></textarea>
     </div>
 
